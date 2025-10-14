@@ -71,7 +71,7 @@ Stretch (add later):
 10. S3 integration for resource audio.
 11. Deploy to staging and run simple demo.
 
-# Quick checklist to copy into your repo README (shareable)
+# Quick checklist (shareable)
 
 * [ ] Phoenix app scaffolded
 * [ ] PostgreSQL + Ecto configured

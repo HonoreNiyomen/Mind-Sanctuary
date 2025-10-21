@@ -9,8 +9,8 @@ config :bcrypt_elixir, :log_rounds, 1
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :mind_sanctuary, MindSanctuary.Repo,
-  username: "root",
-  password: "Qwerty12",
+  username: "postgres",
+  password: "postgres",
   hostname: "localhost",
   database: "mind_sanctuary_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,

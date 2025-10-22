@@ -76,4 +76,13 @@ defmodule MindSanctuaryWeb.ConnCase do
   defp maybe_set_token_authenticated_at(token, authenticated_at) do
     MindSanctuary.AccountsFixtures.override_token_authenticated_at(token, authenticated_at)
   end
+
+  @doc """
+  Logs out the user by clearing the session.
+  """
+  def log_out_user(conn) do
+    conn
+    |> Plug.Conn.delete_session(:user_token)
+    |> Phoenix.ConnTest.init_test_session(%{})
+  end
 end

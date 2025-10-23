@@ -62,20 +62,26 @@
       <%= if @schedules == [] do %>
         <p class="text-gray-500">No schedules yet.</p>
       <% else %>
-        <ul class="divide-y divide-gray-200">
+        <div class="grid grid-cols-1 gap-4">
           <%= for s <- @schedules do %>
-            <li class="py-3">
-              <p class="font-medium"><%= s.title %></p>
-              <p class="text-sm text-gray-600">
-                <%= s.starts_at %>
-                <%= if s.ends_at, do: " - #{s.ends_at}" %>
-              </p>
+            <div class="rounded-xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-white p-4 shadow-sm hover:shadow-md hover:border-indigo-200 transition">
+              <div class="flex items-start justify-between">
+                <div class="flex items-center gap-2 min-w-0">
+                  <.icon name="hero-calendar-days" class="w-4 h-4 text-indigo-500" />
+                  <p class="font-medium text-gray-900 truncate"><%= s.title %></p>
+                </div>
+              </div>
+              <div class="mt-2 flex items-center gap-2 flex-wrap">
+                <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
+                  <%= s.starts_at %><%= if s.ends_at, do: " - #{s.ends_at}" %>
+                </span>
+              </div>
               <%= if s.description && s.description != "" do %>
-                <p class="text-sm text-gray-700 mt-1"><%= s.description %></p>
+                <p class="mt-2 text-sm text-gray-700"><%= s.description %></p>
               <% end %>
-            </li>
+            </div>
           <% end %>
-        </ul>
+        </div>
       <% end %>
     </div>
       </div>
@@ -100,8 +106,8 @@
               <.input field={@form[:ends_at]} type="datetime-local" label="Ends at" />
             </div>
             <div class="flex justify-end gap-3">
-              <button type="button" phx-click="close_modal" class="btn">Cancel</button>
-              <button type="submit" class="btn btn-primary">Save</button>
+              <button type="button" phx-click="close_modal" class="text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">Cancel</button>
+              <button type="submit" class="text-white bg-gradient-to-br from-purple-600 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Save</button>
             </div>
           </.form>
         </div>

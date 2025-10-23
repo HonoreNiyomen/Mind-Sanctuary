@@ -81,6 +81,7 @@
                     field={f[:type]}
                     label="Resource Type"
                     type="select"
+                    prompt="-- select type --"
                     options={[{"Article", "article"}, {"Audio File", "audio"}, {"Video", "video"}, {"Document", "document"}]}
                   />
               </div>
@@ -91,6 +92,7 @@
                       field={f[:category]}
                     label="Category"
                       type="select"
+                    prompt="-- select category --"
                       options={[{"Mental Health", "mental health"}, {"Academic", "academic"}, {"Career", "career"}, {"Wellness", "wellness"}, {"Safety", "safety"}]}
                     />
                 </div>
@@ -100,6 +102,7 @@
                       field={f[:access_level]}
                     label={"Access Level"}
                       type="select"
+                    prompt="-- select access level --"
                       options={[{"Public", "public"}, {"Students Only", "student"}, {"Volunteer (Staff) Only", "volunteer"}]}
                     />
                 </div>

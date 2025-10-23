@@ -23,6 +23,14 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
   end
 
   @impl true
+  def handle_params(params, _uri, socket) do
+    {:noreply,
+     socket
+     |> assign(:params, params)
+    }
+  end
+
+  @impl true
   def handle_event("search", %{"q" => q}, socket) do
     q_down = String.downcase(q || "")
 
@@ -65,7 +73,7 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
     changeset = Resources.change_resource(socket.assigns.resource, (params))
     {:noreply,
      socket
-     |> assign(form: to_form(changeset, action: :validate))
+     |> assign(changeset:  to_form(Map.put(changeset, :action, :validate)))
     }
   end
 

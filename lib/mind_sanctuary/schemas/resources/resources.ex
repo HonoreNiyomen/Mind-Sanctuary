@@ -5,7 +5,7 @@ defmodule MindSanctuary.Resources.Resource do
   schema "resources" do
       field :type, :string
       field :category, :string
-      field :access_level, :string, default:  "public"
+      field :access_level, :string
       field :title, :string
       field :description, :string
       field :url, :string
@@ -20,7 +20,7 @@ defmodule MindSanctuary.Resources.Resource do
     entry
     |> cast(attrs, [:type, :category, :access_level, :title, :description, :url, :is_featured, :is_active])
     |> validate_required([:type, :category, :url, :title])
-    |> validate_inclusion(:type, ["article", "audio file", "video", "document"])
+    |> validate_inclusion(:type, ["article", "audio", "video", "document"])
     |> validate_inclusion(:access_level, ["public", "student", "volunteer"])
     |> validate_inclusion(:category, ["mental health", "academic", "career", "wellness", "safety"])
     |> validate_length(:title, min: 3, max: 255)

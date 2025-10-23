@@ -27,8 +27,7 @@ defmodule MindSanctuary.Repo.Migrations.CreateTables do
       timestamps(type: :utc_datetime)
     end
 
-    create_if_not_exists unique_index(:users, [:email])
-    create_if_not_exists unique_index(:users, [:username])
+    create_if_not_exists unique_index(:users, [:email, :username])
 
     create_if_not_exists table(:users_tokens) do
       add :user_id, references(:users, on_delete: :delete_all), null: false
@@ -55,6 +54,32 @@ defmodule MindSanctuary.Repo.Migrations.CreateTables do
 
       timestamps(type: :utc_datetime)
     end
+
+    create_if_not_exists table(:chats) do
+      add :title, :string, null: false
+      add :type, :string, null: false
+
+      timestamps()
+    end
+
+    create_if_not_exists table(:chat_users) do
+      add :chat_id, references(:chats, on_delete: :delete_all), null: false
+      add :user_id, references(:users, on_delete: :delete_all), null: false
+
+      timestamps()
+    end
+
+    create_if_not_exists unique_index(:chat_users, [:chat_id, :user_id])
+
+    create_if_not_exists table(:chat_messages) do
+      add :body, :text, null: false
+      add :chat_id, references(:chats, on_delete: :delete_all), null: false
+      add :user_id, references(:users, on_delete: :delete_all), null: false
+
+      timestamps()
+    end
+
+    create_if_not_exists index(:chat_messages, [:user_id, :chat_id, :inserted_at])
   end
 
   def alter_tables() do

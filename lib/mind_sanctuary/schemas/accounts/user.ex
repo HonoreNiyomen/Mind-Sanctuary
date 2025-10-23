@@ -75,7 +75,7 @@ defmodule MindSanctuary.Accounts.User do
   """
   def password_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:password])
+    |> cast(attrs, [:password, :confirmed_at])
     |> validate_confirmation(:password, message: "does not match password")
     |> validate_password(opts)
   end

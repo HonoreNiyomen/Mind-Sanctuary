@@ -4,6 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="csrf-token" content={get_csrf_token()} />
+    <%= if !is_nil(@current_scope) and @current_scope.user do %>
+      <meta name="channel-token" content={Phoenix.Token.sign(@conn || @socket, "user socket", @current_scope.user.id)} />
+      <script>
+        window.userToken = document.querySelector("meta[name='channel-token']").getAttribute("content");
+      </script>
+    <% end %>
     <.live_title default="MindSanctuary" suffix=" · Phoenix Framework">
       {assigns[:page_title]}
     </.live_title>
@@ -25,7 +31,7 @@
           setTheme(localStorage.getItem("phx:theme") || "system");
         }
         window.addEventListener("storage", (e) => e.key === "phx:theme" && setTheme(e.newValue || "system"));
-        
+
         window.addEventListener("phx:set-theme", (e) => setTheme(e.target.dataset.phxTheme));
       })();
     </script>

@@ -26,11 +26,78 @@ import {hooks as colocatedHooks} from "phoenix-colocated/mind_sanctuary"
 import topbar from "../vendor/topbar"
 import "./user_socket.js"
 
+let Hooks = {}
+
+Hooks.ChatChannel = {
+  mounted() {
+    this.socket = new Socket("/socket", {
+      params: {token: window.userToken}
+    })
+
+    this.socket.connect()
+    this.channel = null
+
+    // Listen for join_channel event from LiveView
+    this.handleEvent("join_channel", ({topic}) => {
+      if (this.channel) {
+        this.channel.leave()
+      }
+
+      this.channel = this.socket.channel(topic, {})
+
+      this.channel.on("new_msg", msg => {
+        this.pushEvent("new_message", msg)
+        this.scrollToBottom()
+      })
+
+      this.channel.on("messages", payload => {
+        this.pushEvent("load_messages", payload)
+        this.scrollToBottom()
+      })
+
+      this.channel.join()
+        .receive("ok", resp => console.log("Joined successfully", resp))
+        .receive("error", resp => console.log("Unable to join", resp))
+    })
+
+    // Handle form submission
+    this.el.querySelector("form").addEventListener("submit", (e) => {
+      e.preventDefault()
+      const input = e.target.querySelector("input[name='message[body]']")
+      const body = input.value.trim()
+
+      if (body && this.channel) {
+        this.channel.push("new_msg", {body: body})
+        input.value = ""
+      }
+    })
+  },
+
+  scrollToBottom() {
+    const messagesDiv = document.getElementById("messages")
+    if (messagesDiv) {
+      setTimeout(() => {
+        messagesDiv.scrollTop = messagesDiv.scrollHeight
+      }, 100)
+    }
+  },
+
+  destroyed() {
+    if (this.channel) {
+      this.channel.leave()
+    }
+    if (this.socket) {
+      this.socket.disconnect()
+    }
+  }
+}
+
+
 const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 const liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
   params: {_csrf_token: csrfToken},
-  hooks: {...colocatedHooks},
+  hooks: {...Hooks, ...colocatedHooks},
 })
 
 // Show progress bar on live navigation and form submits

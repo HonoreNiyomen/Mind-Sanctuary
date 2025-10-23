@@ -9,7 +9,7 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
-
+now = DateTime.utc_now(:second)
 ######### ADMIN SEED ACCOUNT #################
 {:ok, admin} =
   %{
@@ -22,7 +22,8 @@
 admin
 |> MindSanctuary.Accounts.update_user_password(%{
   password: "admin@mindsanctuary.edu",
-  password_confirmation: "admin@mindsanctuary.edu"
+  password_confirmation: "admin@mindsanctuary.edu",
+  confirmed_at: now
 })
 
 ######### STUDENT SEED ACCOUNT #################
@@ -37,7 +38,8 @@ admin
 student
 |> MindSanctuary.Accounts.update_user_password(%{
   password: "student@mindsanctuary.edu",
-  password_confirmation: "student@mindsanctuary.edu"
+  password_confirmation: "student@mindsanctuary.edu",
+  confirmed_at: now
 })
 
 ######### VOLUNTEER SEED ACCOUNT #################
@@ -52,5 +54,12 @@ student
 volunteer
 |> MindSanctuary.Accounts.update_user_password(%{
   password: "volunteer@mindsanctuary.edu",
-  password_confirmation: "volunteer@mindsanctuary.edu"
+  password_confirmation: "volunteer@mindsanctuary.edu",
+  confirmed_at: now
 })
+
+alias MindSanctuary.Repo
+alias MindSanctuary.Chats.Chat
+
+# Create public chat with ID = 1
+Repo.insert!(%Chat{id: 1, title: "Public Chat", type: "public"})

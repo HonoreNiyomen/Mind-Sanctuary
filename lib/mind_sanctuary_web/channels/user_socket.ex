@@ -10,7 +10,8 @@ defmodule MindSanctuaryWeb.UserSocket do
   # Uncomment the following line to define a "room:*" topic
   # pointing to the `MindSanctuaryWeb.RoomChannel`:
   #
-  channel "room:chat", MindSanctuaryWeb.RoomChannel
+  channel "room:public", MindSanctuaryWeb.RoomChannel
+  channel "room:private:*", MindSanctuaryWeb.RoomChannel
   #
   # To create a channel file, use the mix task:
   #
@@ -35,9 +36,16 @@ defmodule MindSanctuaryWeb.UserSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   @impl true
-  def connect(_params, socket, _connect_info) do
-    {:ok, socket}
+  def connect(%{"token" => token}, socket, _connect_info) do
+    case verify_token(token) do
+      {:ok, user_id} ->
+        {:ok, assign(socket, :user_id, user_id)}
+      {:error, _} ->
+        :error
+    end
   end
+
+  def connect(_params, _socket, _connect_info), do: :error
 
   # Socket IDs are topics that allow you to identify all sockets for a given user:
   #
@@ -50,5 +58,17 @@ defmodule MindSanctuaryWeb.UserSocket do
   #
   # Returning `nil` makes this socket anonymous.
   @impl true
-  def id(_socket), do: nil
+  def id(socket), do: "user_socket:#{socket.assigns.user_id}"
+
+  defp verify_token(token) do
+    case Phoenix.Token.verify(
+      MindSanctuaryWeb.Endpoint,
+      "user socket",
+      token,
+      max_age: 86400
+    ) do
+      {:ok, user_id} -> {:ok, user_id}
+      {:error, _} -> {:error, :invalid_token}
+    end
+  end
 end

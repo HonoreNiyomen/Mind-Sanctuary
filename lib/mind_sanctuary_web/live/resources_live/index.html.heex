@@ -1,0 +1,78 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <div class="mb-8 flex items-center justify-between gap-4">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">Resource Hub</h1>
+      <p class="mt-2 text-gray-600">Find articles, guides, and practices to support your wellbeing.</p>
+    </div>
+      <!-- Add New Resource Button (shown when form is hidden) -->
+  <%= unless @show_form do %>
+    <div class="mb-6 flex justify-end">
+      <button type="button" class="text-white bg-gradient-to-r from-cyan-500 to-blue-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-cyan-300 dark:focus:ring-cyan-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" phx-click="show_form">+ Add new resource</button>
+    </div>
+  <% end %>
+  </div>
+
+  <!-- Search Form -->
+  <.simple_form for={@form} phx-change="search" class="mb-6">
+    <.input field={@form[:q]} type="text" placeholder="Search resources..." />
+  </.simple_form>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <%= for resource <- @filtered_resources do %>
+      <div class="bg-white overflow-hidden shadow rounded-lg group transition hover:shadow-md">
+        <div class="px-5 py-5">
+          <div class="flex items-start justify-between">
+            <span class="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-indigo-50 text-indigo-700">{resource.type}</span>
+          </div>
+          <h3 class="mt-3 text-lg font-semibold text-gray-900 group-hover:text-indigo-700 transition">{resource.title}</h3>
+          <p class="mt-2 text-sm text-gray-600">{resource.description}</p>
+          <div class="mt-4 flex flex-wrap gap-2">
+            <%= for t <- resource.tags do %>
+              <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">{t}</span>
+            <% end %>
+          </div>
+        </div>
+        <div class="bg-gray-50 px-5 py-4">
+          <.link href={resource.url} target="_blank" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">Open resource <span aria-hidden="true">&rarr;</span></.link>
+        </div>
+      </div>
+    <% end %>
+
+    <%= if Enum.empty?(@filtered_resources) do %>
+      <div class="col-span-full">
+        <div class="border-2 border-dashed border-gray-200 rounded-lg p-10 text-center">
+          <p class="text-gray-600">No results matched your search. Try a different keyword.</p>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<!-- Add New Resource Modal -->
+<%= if @show_form do %>
+  <div id="resource-modal" class="fixed inset-0 z-50">
+    <!-- Backdrop with blur -->
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" phx-click="hide_form"></div>
+
+    <!-- Modal content -->
+    <div class="relative z-10 flex min-h-full items-start justify-center p-4 sm:p-8">
+      <div class="w-full max-w-2xl rounded-2xl bg-white shadow-xl ring-1 ring-black/5">
+        <div class="flex items-center justify-between border-b px-5 py-4">
+          <h2 class="text-base font-semibold text-gray-900">Add New Resource</h2>
+          <.button phx-click="hide_form" class="bg-gray-100 hover:bg-gray-200 text-gray-700">
+            <.icon name="hero-x-mark" class="w-5 h-5" />
+          </.button>
+        </div>
+        <div class="px-5 py-5">
+          <.live_component
+            module={MindSanctuaryWeb.ResourcesLive.FormComponent}
+            id="resource-form"
+            resource={%MindSanctuary.Resources.Resource{}}
+            action={:new}
+            patch={~p"/resources"}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+<% end %>

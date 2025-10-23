@@ -6,7 +6,7 @@ defmodule MindSanctuary.Resources do
 alias MindSanctuary.Resources.Resource
   # current_scope must be passed as first argument (per app guidelines)
   def list_resources(current_scope) do
-    from(s in Resource, where: ^current_scope.user.role in s.access_level  or ^"public" in s.access_level, order_by: [asc: s.inserted_at])
+    from(s in Resource, where: s.access_level == ^current_scope.user.role  or s.access_level == ^"public", order_by: [asc: s.inserted_at])
     |> Repo.all()
   end
 
@@ -27,5 +27,17 @@ alias MindSanctuary.Resources.Resource
     %Resource{}
     |> Resource.changeset(attrs)
     |> Repo.insert()
+  end
+
+  def get_resource!(id), do: Repo.get!(Resource, id)
+
+  def update_resource(%Resource{} = resource, attrs) do
+    resource
+    |> Resource.changeset(attrs)
+    |> Repo.update()
+  end
+
+  def delete_resource(%Resource{} = resource) do
+    Repo.delete(resource)
   end
 end

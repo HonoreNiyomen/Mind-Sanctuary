@@ -44,7 +44,7 @@ defmodule MindSanctuaryWeb.UserLive.Registration do
             type="select"
             label="Role"
             prompt="-- select role --"
-            options={[{"Student", "student"}, {"Volunteer", "volunteer"}]}
+            options={[{"Student", "student"}, {"Volunteer (Staff)", "volunteer"}]}
             required
           />
 

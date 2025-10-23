@@ -46,7 +46,7 @@ defmodule MindSanctuary.Repo.Migrations.CreateTables do
     create_if_not_exists table(:resources) do
       add :type, :string, null: false
       add :category, :string, null: false
-      add :access_level, {:array, :string}, []
+      add :access_level, :string, null: false
       add :title, :string, null: false
       add :description, :string
       add :url, :string, null: false

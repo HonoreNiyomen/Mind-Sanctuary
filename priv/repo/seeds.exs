@@ -20,7 +20,7 @@
   |> MindSanctuary.Accounts.register_user()
 
 admin
-|> MindSanctuary.Accounts.change_user_password(%{
+|> MindSanctuary.Accounts.update_user_password(%{
   password: "admin@mindsanctuary.edu",
   password_confirmation: "admin@mindsanctuary.edu"
 })
@@ -35,7 +35,7 @@ admin
   |> MindSanctuary.Accounts.register_user()
 
 student
-|> MindSanctuary.Accounts.change_user_password(%{
+|> MindSanctuary.Accounts.update_user_password(%{
   password: "student@mindsanctuary.edu",
   password_confirmation: "student@mindsanctuary.edu"
 })
@@ -50,7 +50,7 @@ student
   |> MindSanctuary.Accounts.register_user()
 
 volunteer
-|> MindSanctuary.Accounts.change_user_password(%{
+|> MindSanctuary.Accounts.update_user_password(%{
   password: "volunteer@mindsanctuary.edu",
   password_confirmation: "volunteer@mindsanctuary.edu"
 })

@@ -22,7 +22,7 @@ defmodule MindSanctuaryWeb.ResourcesLive.FormComponent do
           <.input field={@form[:tags]} type="text" label="Tags (comma or space separated)" value={@tags_text} />
 
           <:actions>
-            <.button phx-disable-with="Saving...">Save Resource</.button>
+            <.button phx-disable-with="Saving..." class="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Save Resource</.button>
           </:actions>
         </.simple_form>
       </div>

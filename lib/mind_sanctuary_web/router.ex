@@ -41,6 +41,9 @@ defmodule MindSanctuaryWeb.Router do
       live "/dashboard", DashboardLive.Index, :index
       live "/mood", MoodLive.Index, :index
       live "/calendar", CalendarLive.Index, :index
+      live "/resources", ResourcesLive.Index, :index
+      live "/resources/new", ResourcesLive.Index, :new
+      live "/resources/:id/edit", ResourcesLive.Index, :edit
       live "/users/settings", UserLive.Settings, :edit
       live "/users/settings/confirm-email/:token", UserLive.Settings, :confirm_email
     end

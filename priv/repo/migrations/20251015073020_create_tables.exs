@@ -18,6 +18,8 @@ defmodule MindSanctuary.Repo.Migrations.CreateTables do
     execute "CREATE EXTENSION IF NOT EXISTS citext", ""
 
     create_if_not_exists table(:users) do
+      add :username, :string, null: false
+      add :role, :string, null: false
       add :email, :citext, null: false
       add :hashed_password, :string
       add :confirmed_at, :utc_datetime
@@ -26,6 +28,7 @@ defmodule MindSanctuary.Repo.Migrations.CreateTables do
     end
 
     create_if_not_exists unique_index(:users, [:email])
+    create_if_not_exists unique_index(:users, [:username])
 
     create_if_not_exists table(:users_tokens) do
       add :user_id, references(:users, on_delete: :delete_all), null: false
@@ -39,6 +42,19 @@ defmodule MindSanctuary.Repo.Migrations.CreateTables do
 
     create_if_not_exists index(:users_tokens, [:user_id])
     create_if_not_exists unique_index(:users_tokens, [:context, :token])
+
+    create_if_not_exists table(:resources) do
+      add :type, :string, null: false
+      add :category, :string, null: false
+      add :access_level, {:array, :string}, []
+      add :title, :string, null: false
+      add :description, :string
+      add :url, :string, null: false
+      add :is_featured, :boolean
+      add :is_active, :boolean, default: true
+
+      timestamps(type: :utc_datetime)
+    end
   end
 
   def alter_tables() do

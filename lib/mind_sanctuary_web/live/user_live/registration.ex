@@ -24,12 +24,28 @@ defmodule MindSanctuaryWeb.UserLive.Registration do
 
         <.form for={@form} id="registration_form" phx-submit="save" phx-change="validate">
           <.input
+            field={@form[:username]}
+            type="text"
+            label="Username (auto-genarated for aunonimity)"
+            value={UniqueNamesGenerator.generate([:adjectives, :animals])}
+            readonly
+            required
+          />
+          <.input
             field={@form[:email]}
             type="email"
             label="Email"
             autocomplete="username"
             required
             phx-mounted={JS.focus()}
+          />
+          <.input
+            field={@form[:role]}
+            type="select"
+            label="Role"
+            prompt="-- select role --"
+            options={[{"Student", "student"}, {"Volunteer", "volunteer"}]}
+            required
           />
 
           <.button phx-disable-with="Creating account..." class="btn btn-primary w-full">

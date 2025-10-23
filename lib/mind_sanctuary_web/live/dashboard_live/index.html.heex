@@ -1,7 +1,7 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="mb-10 text-center">
     <h1 class="text-3xl font-bold text-gray-900">
-      Welcome, {@current_scope.user.email}
+      Welcome, {@current_scope.user.username}
     </h1>
     <p class="mt-4 text-xl md:text-2xl text-gray-800 italic max-w-3xl mx-auto leading-relaxed">
       <%= if @quote do %>
@@ -9,6 +9,11 @@
         <span class="block mt-3 text-sm md:text-base text-gray-500">
           — {@quote.author || "Anonymous"}
         </span>
+        <%= for tag <- @quote.tags do %>
+          <span class="p-1 px-2 m-1 rounded-md text-sm md:text-base text-gray-700 bg-gray-300">
+            {tag}
+          </span>
+        <% end %>
       <% else %>
         You're the Best
       <% end %>
@@ -58,7 +63,7 @@
         </div>
       </div>
     </div>
-    
+
 <!-- Resource Hub Card -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
@@ -95,13 +100,13 @@
       </div>
       <div class="bg-gray-50 px-4 py-4 sm:px-6">
         <div class="text-sm">
-          <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">
+          <a href="/resources" class="font-medium text-indigo-600 hover:text-indigo-500">
             Browse resources <span aria-hidden="true">&rarr;</span>
           </a>
         </div>
       </div>
     </div>
-    
+
 <!-- Peer Support Card -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
@@ -144,7 +149,7 @@
         </div>
       </div>
     </div>
-    
+
 <!-- Events Card -->
     <div class="bg-white overflow-hidden shadow rounded-lg">
       <div class="px-4 py-5 sm:p-6">
@@ -187,7 +192,7 @@
         </div>
       </div>
     </div>
-    
+
 <!-- Recent Activity Card -->
     <div class="bg-white overflow-hidden shadow rounded-lg col-span-1 md:col-span-2">
       <div class="px-4 py-5 sm:px-6">

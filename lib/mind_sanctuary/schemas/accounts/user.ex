@@ -3,6 +3,8 @@ defmodule MindSanctuary.Accounts.User do
   import Ecto.Changeset
 
   schema "users" do
+    field :username, :string
+    field :role, :string
     field :email, :string
     field :password, :string, virtual: true, redact: true
     field :hashed_password, :string, redact: true
@@ -25,7 +27,7 @@ defmodule MindSanctuary.Accounts.User do
   """
   def email_changeset(user, attrs, opts \\ []) do
     user
-    |> cast(attrs, [:email])
+    |> cast(attrs, [:email, :username, :role])
     |> validate_email(opts)
   end
 

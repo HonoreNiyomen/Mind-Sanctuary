@@ -10,10 +10,13 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
-
 ######### ADMIN SEED ACCOUNT #################
 {:ok, admin} =
-  %{email: "admin@mindsanctuary.edu"}
+  %{
+    email: "admin@mindsanctuary.edu",
+    username: UniqueNamesGenerator.generate([:adjectives, :animals]),
+    role: "admin"
+  }
   |> MindSanctuary.Accounts.register_user()
 
 admin
@@ -24,7 +27,11 @@ admin
 
 ######### STUDENT SEED ACCOUNT #################
 {:ok, student} =
-  %{email: "student@mindsanctuary.edu"}
+  %{
+    email: "student@mindsanctuary.edu",
+    username: UniqueNamesGenerator.generate([:adjectives, :animals]),
+    role: "student"
+  }
   |> MindSanctuary.Accounts.register_user()
 
 student
@@ -35,7 +42,11 @@ student
 
 ######### VOLUNTEER SEED ACCOUNT #################
 {:ok, volunteer} =
-  %{email: "volunteer@mindsanctuary.edu"}
+  %{
+    email: "volunteer@mindsanctuary.edu",
+    username: UniqueNamesGenerator.generate([:adjectives, :animals]),
+    role: "volunteer"
+  }
   |> MindSanctuary.Accounts.register_user()
 
 volunteer

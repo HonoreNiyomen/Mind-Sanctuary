@@ -84,6 +84,7 @@ defmodule MindSanctuaryWeb do
 
       # HTML escaping functionality
       import Phoenix.HTML
+      import Phoenix.LiveView.Helpers
       # Core UI components
       import MindSanctuaryWeb.CoreComponents
 

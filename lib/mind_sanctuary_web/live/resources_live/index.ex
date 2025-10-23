@@ -1,17 +1,16 @@
 defmodule MindSanctuaryWeb.ResourcesLive.Index do
   use MindSanctuaryWeb, :live_view
-
-  alias MindSanctuary.Mood
-  alias MindSanctuary.Mood.Entry
+  alias MindSanctuary.Resources
 
   @impl true
   def mount(_params, _session, socket) do
-    user = socket.assigns.current_scope.user
-    entries = Mood.list_entries(user)
-    changeset = Mood.change_entry(%Entry{})
+    resources = Resources.list_resources()
+    form = to_form(%{"q" => ""})
 
     {:ok,
      socket
+     |> assign(page_title: "Resource Hub")
+     |> assign(form: form, resources: resources, filtered_resources: resources)
      |> assign(:entries, entries)
      |> assign(:changeset, changeset)
      |> assign(:current_filter, "all")
@@ -19,80 +18,44 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
      |> assign(:featured_resources, [])
      |> assign(:show_resource_form, false)
        |> assign(:editing_resource, false)
-     |> assign(:page_title, "Resource Hub")}
+     |> assign(show_form: false)}
   end
 
   @impl true
-  def handle_params(params, _url, socket) do
-    {:noreply, apply_action(socket, socket.assigns.live_action, params)}
-  end
+  def handle_event("search", %{"q" => q}, socket) do
+    q_down = String.downcase(q || "")
 
-  defp apply_action(socket, :index, _params) do
-    socket
-    |> assign(:page_title, "Mood Tracker")
-    |> assign(:entry, nil)
-  end
+    filtered =
+      socket.assigns.resources
+      |> Enum.filter(fn r ->
+        String.contains?(String.downcase(r.title), q_down) or
+          String.contains?(String.downcase(r.description), q_down) or
+          Enum.any?(r.tags, fn t -> String.contains?(String.downcase(t), q_down) end)
+      end)
 
-  defp apply_action(socket, :new, _params) do
-    socket
-    |> assign(:page_title, "New Mood Entry")
-    |> assign(:entry, %Entry{})
-  end
-
-  defp apply_action(socket, :edit, %{"id" => id}) do
-    user = socket.assigns.current_scope.user
-    entry = Mood.get_user_entry(user, id)
-
-    socket
-    |> assign(:page_title, "Edit Mood Entry")
-    |> assign(:entry, entry)
-  end
-
-  @impl true
-  def handle_event("show_resource_form", _, socket) do
-      {:noreply,
-       socket
-       |> assign(:show_resource_form, true)
-       |> assign(:editing_resource, false)
-      }
+    {:noreply, assign(socket, filtered_resources: filtered, form: to_form(%{"q" => q}))}
   end
 
   @impl true
   def handle_event("delete", %{"id" => id}, socket) do
-    user = socket.assigns.current_scope.user
-    entry = Mood.get_user_entry(user, id)
+    resource = Resources.get_resource!(id)
+    {:ok, _} = Resources.delete_resource(resource)
 
-    if entry do
-      {:ok, _} = Mood.delete_entry(entry)
+    resources = Resources.list_resources()
 
-      {:noreply,
-       socket
-       |> assign(:entries, Mood.list_entries(user))
-       |> put_flash(:info, "Mood entry deleted successfully")}
-    else
-      {:noreply,
-       socket
-       |> put_flash(:error, "Entry not found or you don't have permission to delete it")}
-    end
+    {:noreply,
+     socket
+     |> assign(resources: resources, filtered_resources: resources)
+     |> put_flash(:info, "Resource deleted successfully")}
   end
 
   @impl true
-  def handle_event("save", %{"entry" => entry_params}, socket) do
-    user = socket.assigns.current_scope.user
-    save_entry(socket, :new, entry_params, user)
+  def handle_event("show_form", _params, socket) do
+    {:noreply, assign(socket, :show_form, true)}
   end
 
-  defp save_entry(socket, :new, entry_params, user) do
-    case Mood.create_entry(user, entry_params) do
-      {:ok, _entry} ->
-        {:noreply,
-         socket
-         |> assign(:entries, Mood.list_entries(user))
-         |> assign(:changeset, Mood.change_entry(%Entry{}))
-         |> put_flash(:info, "Mood entry created successfully")}
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:noreply, assign(socket, changeset: changeset)}
-    end
+  @impl true
+  def handle_event("hide_form", _params, socket) do
+    {:noreply, assign(socket, :show_form, false)}
   end
 end

@@ -31,7 +31,7 @@ defmodule MindSanctuaryWeb.CoreComponents do
 
   alias Phoenix.LiveView.JS
 
-    @doc """
+  @doc """
   Renders a modal.
 
   ## Examples
@@ -569,9 +569,9 @@ defmodule MindSanctuaryWeb.CoreComponents do
     ~H"""
     <.form :let={f} for={@for} as={@as} {@rest}>
       <div class="space-y-6">
-        <%= render_slot(@inner_block, f) %>
+        {render_slot(@inner_block, f)}
         <div :for={action <- @actions}>
-          <%= render_slot(action, f) %>
+          {render_slot(action, f)}
         </div>
       </div>
     </.form>
@@ -580,5 +580,29 @@ defmodule MindSanctuaryWeb.CoreComponents do
 
   def translate_errors(errors, field) when is_list(errors) do
     for {^field, {msg, opts}} <- errors, do: translate_error({msg, opts})
+  end
+
+  def format_datetime(nil), do: "No date"
+  def format_datetime(""), do: "No date"
+
+  def format_datetime(datetime_string) when is_binary(datetime_string) do
+  case NaiveDateTime.from_iso8601(datetime_string) do
+    {:ok, naive_datetime} ->
+      shifted_datetime = NaiveDateTime.add(naive_datetime, 2 * 60 * 60)
+      Calendar.strftime(shifted_datetime, "%H:%M Hrs - %d %B")
+
+    {:error, _} ->
+      "Invalid date format"
+  end
+end
+
+  def format_datetime(%DateTime{} = datetime) do
+    shifted_datetime = DateTime.add(datetime, 2 * 60 * 60)
+    Calendar.strftime(shifted_datetime, "%H:%M Hrs - %d %B")
+  end
+
+  def format_datetime(%NaiveDateTime{} = naive_datetime) do
+    shifted_datetime = NaiveDateTime.add(naive_datetime, 2 * 60 * 60)
+    Calendar.strftime(shifted_datetime, "%H:%M Hrs - %d %B")
   end
 end

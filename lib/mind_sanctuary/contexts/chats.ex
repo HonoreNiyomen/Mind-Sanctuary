@@ -51,24 +51,38 @@ defmodule MindSanctuary.Chats do
         join: cu in ChatUser,
         on: cu.chat_id == c.id,
         where: cu.user_id == ^user_id and c.type == "private",
-        preload: [chat_users: :user],
+        preload: [messages: :user],
         order_by: [desc: c.updated_at]
 
     Repo.all(query)
   end
 
-  def get_or_create_private_chat(user_id, other_user_id) do
+  def get_or_create_private_chat(user_id, other_user_id, chat_name \\ "Private Chat") do
     if user_id == other_user_id do
       {:error, :cannot_chat_with_self}
     else
-      case find_private_chat_between_users(user_id, other_user_id) do
-        nil -> create_private_chat([user_id, other_user_id])
+      case find_private_chat_between_users(user_id, other_user_id, chat_name) do
+        nil -> create_private_chat([user_id, other_user_id], chat_name)
         chat -> {:ok, chat}
       end
     end
   end
 
-  defp find_private_chat_between_users(user_id, other_user_id) do
+  def private_chat_changeset(%ChatUser{} = chat, attr \\ %{}) do
+    chat
+    |> ChatUser.changeset(attr)
+    # Repo.transaction(fn ->
+    #   chat = Repo.insert!(%Chat{title: "Private Chat", type: "private"})
+
+    #   Enum.each(user_ids, fn user_id ->
+    #     Repo.insert!(%ChatUser{chat_id: chat.id, user_id: user_id})
+    #   end)
+
+    #   chat
+    # end)
+  end
+
+  defp find_private_chat_between_users(user_id, other_user_id, chat_name) do
     # Subquery to find chats with exactly 2 participants
     chats_with_two_users =
       from(cu in ChatUser,
@@ -84,6 +98,7 @@ defmodule MindSanctuary.Chats do
       join: cu2 in ChatUser,
       on: cu2.chat_id == c.id and cu2.user_id == ^other_user_id,
       where: c.type == "private",
+      where: c.title == ^chat_name,
       where: c.id in subquery(chats_with_two_users),
       select: c,
       limit: 1
@@ -91,11 +106,18 @@ defmodule MindSanctuary.Chats do
     |> Repo.one()
   end
 
-  defp create_private_chat(user_ids) do
+  defp create_private_chat(user_ids, chat_name) do
     Repo.transaction(fn ->
-      chat = Repo.insert!(%Chat{title: "Private Chat", type: "private"})
+      chat = Repo.insert!(%Chat{title: chat_name, type: "private"})
 
       Enum.each(user_ids, fn user_id ->
+        [chat.id, user_id] |>IO.inspect(label: "===")
+        user_id =
+          if is_binary(user_id) do
+            String.to_integer(user_id)
+          else
+            user_id
+        end
         Repo.insert!(%ChatUser{chat_id: chat.id, user_id: user_id})
       end)
 

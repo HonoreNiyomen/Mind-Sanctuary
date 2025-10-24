@@ -10,6 +10,22 @@ defmodule MindSanctuary.Accounts do
 
   ## Database getters
 
+  def users_select_id_list do
+    public_fields = [
+      :id,
+      :role,
+      :username
+    ]
+
+    User
+    |> where([a], a.role != ^"admin")
+    |> select([m], map(m, ^public_fields))
+    |> Repo.all()
+    |> Enum.uniq_by(& &1.id)
+    |> Enum.map(fn user ->
+      {"#{user.username} - #{user.role}", user.id}
+    end)
+  end
   @doc """
   Gets a user by email.
 

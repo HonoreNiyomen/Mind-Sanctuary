@@ -11,7 +11,9 @@
       Public Chat
     </.link>
 
-    <h3 class="text-sm font-semibold mt-4 mb-2">Private Chats</h3>
+    <div class="flex mt-4 mb-2 p-2">
+      <h3 class="text-sm font-semibold mt-2 mr-7">Private Chats </h3><.button phx-click="create_new_chat"> +</.button>
+    </div>
     <%= for chat <- @user_chats do %>
       <.link
         navigate={~p"/chat/#{chat.id}"}
@@ -20,6 +22,43 @@
         <%= chat.title %>
       </.link>
     <% end %>
+
+      <.modal :if={@new_chat} id="create-new-private-chat" show on_cancel={JS.navigate(~p"/chat")}>
+          <div class="px-4 py-5 sm:px-6 bg-indigo-50">
+            <h2 class="text-lg leading-6 font-medium text-gray-900">
+              Start New Chat
+            </h2>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+              Start new anonymous chat with peer  volenteer
+            </p>
+          </div>
+
+          <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
+            <.form :let={f} for={@chat_changeset} phx-submit="start_chat" class="space-y-6">
+                  <.input
+                    field={f[:user_id]}
+                    label="Select User to Start Chat With"
+                    type="select"
+                    prompt="-- select user --"
+                    options={Accounts.users_select_id_list()}
+                  />
+              <div class="flex justify-between space-x-3">
+                <button
+                  type="button"
+                  phx-click="cancel_new_chat"
+                  class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  Cancel
+                </button>
+              <div class="justify-end">
+                <.button type="submit" variant="primary">
+                  Start Chat
+                </.button>
+          </div>
+          </div>
+            </.form>
+          </div>
+      </.modal>
   </div>
 
   <!-- Main chat area -->
@@ -33,11 +72,11 @@
     <!-- Messages -->
     <div class="flex-1 overflow-y-auto p-4" id="messages">
       <%= for message <- @messages do %>
-        <div class="mb-4">
-          <div class="font-semibold"><%= message["user"]["username"] %></div>
-          <div class="text-gray-700"><%= message["body"] %></div>
-          <div class="text-xs text-gray-500">
-            <%= message["inserted_at"] %>
+        <div class="mb-4 bg-gray-200 justify-between rounded-md p-4">
+          <div class="text-gray-700 mb-2"><%= message["user"]["username"] %></div>
+          <div class="boader bg-gray-300 rounded-md p-4 font-semibold"><%= message["body"] %></div>
+          <div class="text-xs text-gray-500 flex justify-end">
+            <%= format_datetime(message["inserted_at"]) %>
           </div>
         </div>
       <% end %>

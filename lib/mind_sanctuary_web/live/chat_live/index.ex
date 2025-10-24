@@ -1,7 +1,8 @@
 # lib/mind_sanctuary_web/live/chat_live/index.ex
 defmodule MindSanctuaryWeb.ChatLive.Index do
   use MindSanctuaryWeb, :live_view
-  alias MindSanctuary.Chats
+  alias MindSanctuary.{Chats, Accounts}
+  alias MindSanctuary.Chats.{ChatUser}
 
   @impl true
   def mount(_params, _session, socket) do
@@ -13,7 +14,9 @@ defmodule MindSanctuaryWeb.ChatLive.Index do
      |> assign(:message_body, "")
      |> assign(:user_chats, Chats.list_user_chats(user_id))
      |> assign(:channel, nil)
-     |> assign(:chat_id, nil)}
+     |> assign(:chat_id, nil)
+     |> assign(:new_chat, false)
+     |> assign(:chat_changeset, to_form(Chats.private_chat_changeset(%ChatUser{}, %{})))}
   end
 
   @impl true
@@ -57,10 +60,35 @@ defmodule MindSanctuaryWeb.ChatLive.Index do
     {:noreply, assign(socket, :messages, messages)}
   end
 
-  def handle_event("start_chat", %{"user_id" => other_user_id}, socket) do
-    current_user_id = socket.assigns.current_scope.user.id
+  def handle_event("create_new_chat", _params, socket) do
+    {:noreply, assign(socket, :new_chat, true)}
+  end
 
-    case Chats.get_or_create_private_chat(current_user_id, other_user_id) do
+  def handle_event("cancel_new_chat", _params, socket) do
+    {:noreply, assign(socket, :new_chat, false)}
+  end
+
+  def handle_event("start_chat", %{"chat_user" => %{"user_id" => other_user_id}}, socket) do
+    current_user = socket.assigns.current_scope.user
+    other_user_id_filter = String.to_integer(other_user_id)
+
+    selected_user =
+      Enum.find(Accounts.users_select_id_list(), fn
+        {_display_name, user_id} when user_id == other_user_id_filter -> true
+        _ -> false
+      end)
+
+    chat_name =
+      case selected_user do
+        {display_name, ^other_user_id_filter} ->
+          [username_part | _] = String.split(display_name, " - ")
+          "#{username_part}, #{current_user.username}"
+
+        nil ->
+          "Champ #{other_user_id}, #{current_user.username}"
+      end
+
+    case Chats.get_or_create_private_chat(current_user.id, other_user_id, chat_name) do
       {:ok, chat} ->
         {:noreply, push_navigate(socket, to: ~p"/chat/#{chat.id}")}
 

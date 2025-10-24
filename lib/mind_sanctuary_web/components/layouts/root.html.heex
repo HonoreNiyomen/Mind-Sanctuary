@@ -39,17 +39,19 @@
   <body>
     <nav class="w-full relative z-10 px-4 sm:px-6 lg:px-8 py-3">
       <div class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <.link href={~p"/dashboard"} class="flex items-center gap-2 font-semibold text-gray-900 hover:text-indigo-600">
-            <.icon name="hero-home" class="w-5 h-5" />
-            <span>Home</span>
-          </.link>
-        </div>
-        <ul class="menu menu-horizontal flex items-center gap-4">
+        <%= if @current_scope && @current_scope.user do %>
+          <div class="flex items-center gap-2">
+            <.link href={~p"/dashboard"} class="flex items-center gap-2 font-semibold text-gray-900 hover:text-indigo-600">
+              <.icon name="hero-home" class="w-5 h-5" />
+              <span>Home</span>
+            </.link>
+          </div>
+        <% end %>
+        <ul class="menu menu-horizontal ml-auto flex items-center gap-4">
           <%= if @current_scope do %>
-            <li>
+            <!-- <li>
               {@current_scope.user.email}
-            </li>
+            </li> -->
             <li>
               <.link href={~p"/users/settings"}>Settings</.link>
             </li>
@@ -64,13 +66,13 @@
               <.link href={~p"/users/log-in"}>Log in</.link>
             </li>
           <% end %>
-          <div class="flex-none">
+          <!--<div class="flex-none">
             <ul class="flex flex-column px-1 space-x-4 items-center">
               <li>
                 <.theme_toggle />
               </li>
             </ul>
-          </div>
+          </div> -->
         </ul>
       </div>
     </nav>

@@ -16,6 +16,7 @@ defmodule MindSanctuaryWeb.ChatLive.Index do
      |> assign(:channel, nil)
      |> assign(:chat_id, nil)
      |> assign(:new_chat, false)
+     |> assign(:show_mobile_sidebar, false)
      |> assign(:chat_changeset, to_form(Chats.private_chat_changeset(%ChatUser{}, %{})))}
   end
 
@@ -96,4 +97,9 @@ defmodule MindSanctuaryWeb.ChatLive.Index do
         {:noreply, put_flash(socket, :error, "You cannot chat with yourself")}
     end
   end
+
+# Add this event handler
+def handle_event("toggle_mobile_sidebar", _params, socket) do
+  {:noreply, assign(socket, show_mobile_sidebar: !socket.assigns.show_mobile_sidebar)}
+end
 end

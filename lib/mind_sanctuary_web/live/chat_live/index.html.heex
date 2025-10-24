@@ -1,105 +1,366 @@
 <!-- lib/mind_sanctuary_web/live/chat_live/index.html.heex -->
-<div class="flex min-h-[900px]" id="chat-container" phx-hook="ChatChannel">
-  <!-- Sidebar with private chats -->
-  <div class="w-64 p-4 overflow-y-auto">
-    <h2 class="text-xl font-bold mb-4">Chats</h2>
-
-    <.link
-      navigate={~p"/chat"}
-      class={"block p-2 mb-2 rounded #{if @live_action == :index, do: "bg-blue-500 text-white", else: "hover:bg-gray-200"}"}
-    >
-      Public Chat
-    </.link>
-
-    <div class="flex mt-4 mb-2 p-2">
-      <h3 class="text-sm font-semibold mt-2 mr-7">Private Chats </h3><.button phx-click="create_new_chat"> +</.button>
-    </div>
-    <%= for chat <- @user_chats do %>
-      <.link
-        navigate={~p"/chat/#{chat.id}"}
-        class={"block p-2 mb-2 rounded #{if @chat_id == to_string(chat.id), do: "bg-blue-500 text-white", else: "hover:bg-gray-200"}"}
-      >
-        <%= chat.title %>
-      </.link>
-    <% end %>
-
-      <.modal :if={@new_chat} id="create-new-private-chat" show on_cancel={JS.navigate(~p"/chat")}>
-          <div class="px-4 py-5 sm:px-6 bg-indigo-50">
-            <h2 class="text-lg leading-6 font-medium text-gray-900">
-              Start New Chat
-            </h2>
-            <p class="mt-1 max-w-2xl text-sm text-gray-500">
-              Start new anonymous chat with peer  volenteer
-            </p>
+<div
+  class="h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50 py-6 px-4 lg:px-8"
+  id="chat-container"
+  phx-hook="ChatChannel"
+>
+<div class="w-full h-full">
+    <div class="grid gap-4 lg:grid-cols-[340px_1fr] lg:gap-6 h-full">
+      <!-- Sidebar with conversations -->
+      <aside class={
+        "flex flex-col space-y-4 rounded-2xl border border-slate-200/60 bg-white/90 p-5 shadow-sm backdrop-blur-xl lg:shadow-lg overflow-hidden h-full max-h-[calc(100vh-3rem)] " <>
+        if @live_action == :show do
+          "hidden lg:flex"
+        else
+          ""
+        end
+      }>
+        <!-- Header Section -->
+        <div class="flex items-start justify-between border-b border-slate-100 pb-4">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-1">
+              <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-md">
+                <span class="text-white text-sm font-bold">💬</span>
+              </div>
+              <h2 class="text-xl font-bold text-slate-900">Messages</h2>
+            </div>
+            <p class="text-xs text-slate-500 ml-10">Stay connected with your community</p>
           </div>
-
-          <div class="border-t border-gray-200 px-4 py-5 sm:p-6">
-            <.form :let={f} for={@chat_changeset} phx-submit="start_chat" class="space-y-6">
-                  <.input
-                    field={f[:user_id]}
-                    label="Select User to Start Chat With"
-                    type="select"
-                    prompt="-- select user --"
-                    options={Accounts.users_select_id_list()}
-                  />
-              <div class="flex justify-between space-x-3">
-                <button
-                  type="button"
-                  phx-click="cancel_new_chat"
-                  class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Cancel
-                </button>
-              <div class="justify-end">
-                <.button type="submit" variant="primary">
-                  Start Chat
-                </.button>
-          </div>
-          </div>
-            </.form>
-          </div>
-      </.modal>
-  </div>
-
-  <!-- Main chat area -->
-  <div class="flex-1 flex flex-col">
-    <div class="bg-gray-800 text-white p-4">
-      <h1 class="text-xl font-bold">
-        <%= if @live_action == :index, do: "Public Chat", else: "Private Chat" %>
-      </h1>
-    </div>
-
-    <!-- Messages -->
-    <div class="flex-1 overflow-y-auto p-4" id="messages">
-      <%= for message <- @messages do %>
-        <div class="mb-4 bg-gray-200 justify-between rounded-md p-4">
-          <div class="text-gray-700 mb-2"><%= message["user"]["username"] %></div>
-          <div class="boader bg-gray-300 rounded-md p-4 font-semibold"><%= message["body"] %></div>
-          <div class="text-xs text-gray-500 flex justify-end">
-            <%= format_datetime(message["inserted_at"]) %>
+          <div class="flex flex-col items-end gap-1">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-600">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Online
+            </span>
+            <span class="text-xs text-slate-400 font-medium">
+              <%= Calendar.strftime(DateTime.utc_now(), "%b %d, %Y") %>
+            </span>
           </div>
         </div>
-      <% end %>
-    </div>
 
-    <!-- Input -->
-    <div class="border-t p-4">
-      <form phx-submit="send_message" class="flex gap-2">
-        <input
-          type="text"
-          name="message[body]"
-          value={@message_body}
-          placeholder="Type a message..."
-          autocomplete="off"
-          class="flex-1 border rounded px-4 py-2"
-        />
-        <button
-          type="submit"
-          class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
-        >
-          Send
-        </button>
-      </form>
+        <!-- Public Chat Room -->
+        <div class="space-y-2">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 px-1">Community</h3>
+          <.link
+            navigate={~p"/chat"}
+            class={
+              "group relative flex items-center gap-3 rounded-xl px-4 py-3.5 transition-all duration-200 " <>
+                if @live_action == :index do
+                  "bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg shadow-indigo-200/50"
+                else
+                  "bg-slate-50 text-slate-700 hover:bg-slate-100 hover:shadow-md"
+                end
+            }
+          >
+            <div class={
+              "flex h-10 w-10 items-center justify-center rounded-lg transition-transform group-hover:scale-110 " <>
+              if @live_action == :index do
+                "bg-white/20 backdrop-blur-sm"
+              else
+                "bg-white shadow-sm"
+              end
+            }>
+              <span class={
+                "text-lg " <>
+                if @live_action == :index, do: "", else: "grayscale"
+              }>🌐</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class={
+                "text-sm font-semibold truncate " <>
+                if @live_action == :index, do: "text-white", else: "text-slate-900"
+              }>Public Chat</p>
+              <p class={
+                "text-xs truncate " <>
+                if @live_action == :index, do: "text-white/70", else: "text-slate-500"
+              }>Everyone can join</p>
+            </div>
+            <%= if @live_action == :index do %>
+              <div class="flex items-center gap-1.5">
+                <span class="h-2 w-2 rounded-full bg-white/80 animate-pulse"></span>
+              </div>
+            <% end %>
+          </.link>
+        </div>
+
+        <!-- Private Chats Section -->
+        <div class="flex-1 flex flex-col space-y-3 overflow-hidden">
+          <div class="flex items-center justify-between px-1">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Private Chats</h3>
+            <.button
+              phx-click="create_new_chat"
+              class="group flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-md transition-all duration-200 hover:shadow-lg hover:scale-105"
+            >
+              <span class="text-lg leading-none group-hover:rotate-90 transition-transform duration-200">+</span>
+            </.button>
+          </div>
+
+          <div class="flex-1 space-y-1.5 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+            <%= for chat <- @user_chats do %>
+              <.link
+                navigate={~p"/chat/#{chat.id}"}
+                class={
+                  "group flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 " <>
+                    if @chat_id == to_string(chat.id) do
+                      "bg-indigo-50 border border-indigo-200 shadow-sm"
+                    else
+                      "hover:bg-slate-50 border border-transparent hover:border-slate-200"
+                    end
+                }
+              >
+                <div class={
+                  "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold shadow-sm transition-transform group-hover:scale-110 " <>
+                  if @chat_id == to_string(chat.id) do
+                    "bg-gradient-to-br from-indigo-500 to-purple-500 text-white"
+                  else
+                    "bg-gradient-to-br from-slate-200 to-slate-300 text-slate-600"
+                  end
+                }>
+                  <%= String.first(chat.title) |> String.upcase() %>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class={
+                    "text-sm font-semibold truncate " <>
+                    if @chat_id == to_string(chat.id), do: "text-indigo-900", else: "text-slate-700"
+                  }><%= chat.title %></p>
+                  <p class="text-xs text-slate-500 truncate">Tap to open</p>
+                </div>
+                <%= if @chat_id == to_string(chat.id) do %>
+                  <div class="h-2 w-2 rounded-full bg-indigo-500"></div>
+                <% end %>
+              </.link>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Modal for new chat -->
+        <.modal :if={@new_chat} id="create-new-private-chat" show on_cancel={JS.navigate(~p"/chat")}>
+          <div class="overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div class="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-6 py-8 text-white">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="h-12 w-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                  <span class="text-2xl">💭</span>
+                </div>
+                <h2 class="text-2xl font-bold">New Conversation</h2>
+              </div>
+              <p class="text-sm text-white/80 ml-15">
+                Start a private chat with a wellbeing volunteer
+              </p>
+            </div>
+
+            <div class="space-y-6 px-6 py-6">
+              <.form :let={f} for={@chat_changeset} phx-submit="start_chat" class="space-y-6">
+                <.input
+                  field={f[:user_id]}
+                  label="Select Someone to Chat With"
+                  type="select"
+                  prompt="-- Choose a volunteer --"
+                  options={Accounts.users_select_id_list()}
+                />
+
+                <div class="flex flex-wrap justify-end gap-3 pt-2">
+                  <button
+                    type="button"
+                    phx-click="cancel_new_chat"
+                    class="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+                  >
+                    Cancel
+                  </button>
+                  <.button
+                    type="submit"
+                    class="rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 px-6 py-2.5 font-semibold text-white shadow-lg transition hover:shadow-xl hover:scale-105"
+                  >
+                    Start Chat
+                  </.button>
+                </div>
+              </.form>
+            </div>
+          </div>
+        </.modal>
+      </aside>
+
+      <!-- Main chat area -->
+      <section class={
+        "flex flex-col overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow-lg backdrop-blur-xl " <>
+        if @live_action == :index do
+          "hidden lg:flex"
+        else
+          ""
+        end
+      }>
+        <!-- Chat Header -->
+        <header class="border-b border-slate-100 bg-gradient-to-r from-white to-slate-50/50 px-6 py-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+              <!-- Back button for mobile -->
+              <button
+                phx-click={JS.navigate(~p"/chat")}
+                class="lg:hidden flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                <span class="text-lg">←</span>
+              </button>
+              
+              <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 shadow-lg">
+                <span class="text-xl">
+                  <%= if @live_action == :index, do: "🌐", else: "💬" %>
+                </span>
+              </div>
+              <div>
+                <h1 class="text-xl font-bold text-slate-900">
+                  <%= if @live_action == :index, do: "Public Chat", else: "Private Chat" %>
+                </h1>
+                <p class="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                  <span class="inline-flex h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Active now
+                </p>
+              </div>
+            </div>
+            <div class="hidden lg:flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-50 border border-slate-200">
+              <span class="text-xs font-semibold text-slate-600">Secure</span>
+              <span class="text-slate-400">🔒</span>
+            </div>
+          </div>
+        </header>
+
+        <!-- Messages Area -->
+        <div class="flex-1 overflow-y-auto bg-gradient-to-b from-slate-50/30 to-white px-6 py-6" id="messages">
+          <div class="space-y-6 max-w-4xl mx-auto">
+            <% current_user = @current_scope.user %>
+            <%= for message <- @messages do %>
+              <% user = message["user"] || %{} %>
+              <% username = user["username"] || "Guest" %>
+              <% user_id = user["id"] || message["user_id"] %>
+              <% is_self = user_id == current_user.id %>
+              <% initial = String.first(username || "") || "?" %>
+              <% body = message["body"] || "" %>
+
+              <div
+                class={
+                  "flex w-full gap-3 items-end animate-fade-in " <>
+                    if is_self do
+                      " justify-end"
+                    else
+                      " justify-start"
+                    end
+                }
+              >
+                <%= unless is_self do %>
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-sm font-bold text-white shadow-md">
+                    <%= String.upcase(initial) %>
+                  </div>
+                <% end %>
+
+                <div
+                  class={
+                    "flex max-w-[70%] flex-col space-y-1.5" <>
+                      if is_self do
+                        " items-end"
+                      else
+                        " items-start"
+                      end
+                  }
+                >
+                  <div
+                    class={
+                      "flex items-center gap-2 text-xs font-semibold" <>
+                        if is_self do
+                          " flex-row-reverse text-slate-400"
+                        else
+                          " text-slate-500"
+                        end
+                    }
+                  >
+                    <span><%= if is_self, do: "You", else: username %></span>
+                    <span class="text-[10px] font-normal text-slate-400">
+                      <%= format_datetime(message["inserted_at"]) %>
+                    </span>
+                  </div>
+
+                  <div
+                    class={
+                      "group relative rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-md transition-all duration-200 hover:shadow-lg " <>
+                        if is_self do
+                          " rounded-br-sm bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white"
+                        else
+                          " rounded-bl-sm bg-white text-slate-700 border border-slate-100"
+                        end
+                    }
+                  >
+                    <%= message["body"] %>
+                  </div>
+                </div>
+
+                <%= if is_self do %>
+                  <div class="flex h-6 w-6 items-center justify-center rounded-lg bg-emerald-500 text-xs font-bold text-white shadow-sm">
+                    ✓
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+
+        <!-- Message Input -->
+        <div class="border-t border-slate-100 bg-white px-6 py-4">
+          <form phx-submit="send_message" class="flex gap-3 items-end">
+            <div class="relative flex-1">
+              <input
+                type="text"
+                name="message[body]"
+                value={@message_body}
+                placeholder="Type your message here..."
+                autocomplete="off"
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 pr-12 text-sm text-slate-700 placeholder-slate-400 transition focus:border-indigo-300 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-200/60"
+              />
+              <div class="pointer-events-none absolute bottom-3 right-3 flex items-center gap-2">
+                <span class="text-xs font-medium text-slate-300">⏎</span>
+              </div>
+            </div>
+            <button
+              type="submit"
+              class="group flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white shadow-lg transition-all duration-200 hover:shadow-xl hover:scale-105"
+            >
+              <span class="text-xl group-hover:scale-110 transition-transform">➤</span>
+            </button>
+          </form>
+          <p class="text-xs text-slate-400 mt-2 text-center">
+            Press Enter to send • Be kind and respectful
+          </p>
+        </div>
+      </section>
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+</style>

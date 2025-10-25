@@ -67,8 +67,7 @@ defmodule MindSanctuary.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      {:unique_names_generator, "~> 0.2.0"},
-      {:timex, "~> 3.7"}
+      {:unique_names_generator, "~> 0.2.0"}
     ]
   end
 

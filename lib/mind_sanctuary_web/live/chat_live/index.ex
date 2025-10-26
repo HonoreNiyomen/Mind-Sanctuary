@@ -5,7 +5,7 @@ defmodule MindSanctuaryWeb.ChatLive.Index do
   alias MindSanctuary.Chats.{ChatUser}
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     user_id = socket.assigns.current_scope.user.id
 
     {:ok,
@@ -13,39 +13,63 @@ defmodule MindSanctuaryWeb.ChatLive.Index do
      |> assign(:messages, [])
      |> assign(:message_body, "")
      |> assign(:user_chats, Chats.list_user_chats(user_id))
-     |> assign(:channel, nil)
-     |> assign(:chat_id, nil)
      |> assign(:new_chat, false)
      |> assign(:show_mobile_sidebar, false)
+     |> get_live_action(socket.assigns.live_action, params)
      |> assign(:chat_changeset, to_form(Chats.private_chat_changeset(%ChatUser{}, %{})))}
   end
 
-  @impl true
-  def handle_params(%{"id" => chat_id}, _uri, socket) do
+  defp get_live_action(socket, :index, _params) do
+    socket
+    |> assign(:live_action, :index)
+    |> assign(:chat_id, nil)
+    |> assign(:public_tab_active?, true)
+    |> push_event("join_channel", %{topic: "room:public"})
+  end
+
+  defp get_live_action(socket, :private, params) do
+    %{"id" => chat_id} = params
     user_id = socket.assigns.current_scope.user.id
 
     # Verify access
     if Chats.user_has_access?(chat_id, user_id) do
-      {:noreply,
-       socket
-       |> assign(:live_action, :private)
-       |> assign(:chat_id, chat_id)
-       |> push_event("join_channel", %{topic: "room:private:#{chat_id}"})}
+      socket
+      |> assign(:live_action, :private)
+      |> assign(:chat_id, chat_id)
+    |> assign(:public_tab_active?, false)
+      |> push_event("join_channel", %{topic: "room:private:#{chat_id}"})
     else
-      {:noreply,
-       socket
-       |> put_flash(:error, "Access denied")
-       |> push_navigate(to: ~p"/chat")}
+      socket
+      |> put_flash(:error, "Access denied")
+      |> push_navigate(to: ~p"/chat")
     end
   end
 
-  def handle_params(_params, _uri, socket) do
-    {:noreply,
-     socket
-     |> assign(:live_action, :index)
-     |> assign(:chat_id, nil)
-     |> push_event("join_channel", %{topic: "room:public"})}
-  end
+  # @impl true
+  # def handle_params(%{"id" => chat_id}, _uri, socket) do
+
+  #   # Verify access
+  #   if Chats.user_has_access?(chat_id, user_id) do
+  #     {:noreply,
+  #      socket
+  #      |> assign(:live_action, :private)
+  #      |> assign(:chat_id, chat_id)
+  #      |> push_event("join_channel", %{topic: "room:private:#{chat_id}"})}
+  #   else
+  #     {:noreply,
+  #      socket
+  #      |> put_flash(:error, "Access denied")
+  #      |> push_navigate(to: ~p"/chat")}
+  #   end
+  # end
+
+  # def handle_params(_params, _uri, socket) do
+  #   {:noreply,
+  #    socket
+  #    |> assign(:live_action, :index)
+  #    |> assign(:chat_id, nil)
+  #    |> push_event("join_channel", %{topic: "room:public"})}
+  # end
 
   @impl true
   def handle_event("send_message", %{"message" => %{"body" => _body}}, socket) do
@@ -67,6 +91,10 @@ defmodule MindSanctuaryWeb.ChatLive.Index do
 
   def handle_event("cancel_new_chat", _params, socket) do
     {:noreply, assign(socket, :new_chat, false)}
+  end
+
+  def handle_event("switch_tab", _params, socket) do
+    {:noreply, assign(socket, :public_tab_active?, !socket.assigns.public_tab_active?)}
   end
 
   def handle_event("start_chat", %{"chat_user" => %{"user_id" => other_user_id}}, socket) do
@@ -98,8 +126,8 @@ defmodule MindSanctuaryWeb.ChatLive.Index do
     end
   end
 
-# Add this event handler
-def handle_event("toggle_mobile_sidebar", _params, socket) do
-  {:noreply, assign(socket, show_mobile_sidebar: !socket.assigns.show_mobile_sidebar)}
-end
+  # Add this event handler
+  def handle_event("toggle_mobile_sidebar", _params, socket) do
+    {:noreply, assign(socket, show_mobile_sidebar: !socket.assigns.show_mobile_sidebar)}
+  end
 end

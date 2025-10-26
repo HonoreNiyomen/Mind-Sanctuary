@@ -20,7 +20,7 @@ defmodule MindSanctuaryWeb.Router do
   scope "/", MindSanctuaryWeb do
     pipe_through [:browser]
 
-    get "/", PageController, :home
+    live "/", HomeLive.Index, :index
 
     live_session :current_user,
       on_mount: [{MindSanctuaryWeb.UserAuth, :mount_current_scope}] do

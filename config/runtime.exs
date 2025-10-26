@@ -20,6 +20,8 @@ if System.get_env("PHX_SERVER") do
   config :mind_sanctuary, MindSanctuaryWeb.Endpoint, server: true
 end
 
+config :mind_sanctuary, :resources_upload_dir, "#{System.get_env("HOME")}/mind_sanctuary/resources"
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||

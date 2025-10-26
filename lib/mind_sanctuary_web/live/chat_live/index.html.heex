@@ -1,14 +1,14 @@
 <div class="max-w-7xl max-h-screen mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <div class="mb-8">
     <h1 class="text-3xl font-bold text-gray-900">
-      <%= if @public_tab_active? do %>
+      <%= if @live_action == :index do %>
         Public Chat
       <% else %>
         Private Chat
       <% end %>
     </h1>
     <p class="mt-2 text-sm text-gray-600">
-      <%= if @public_tab_active? do %>
+      <%= if @live_action == :index do %>
         Welcome to the community chat
       <% else %>
         Direct messaging
@@ -288,7 +288,6 @@
                   <% else %>
                     <ul class="space-y-2">
                       <%= for chat <- @user_chats do %>
-                        <% IO.inspect([@chat_id, chat.id], label: "===") %>
                         <li>
                           <button
                             phx-click={JS.navigate(~p"/chat/#{chat.id}")}

@@ -6,6 +6,11 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
   @impl true
   def mount(_params, _session, socket) do
     resources = Resources.list_resources(socket.assigns.current_scope)
+
+    featured_resources =
+      resources
+      |> Enum.filter(& &1.is_featured)
+
     form = to_form(%{"q" => ""})
 
     {:ok,
@@ -16,18 +21,19 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
      |> assign(:current_filter, "all")
      |> assign(:resources, resources)
      |> assign(:resource, %Resource{})
-     |> assign(:featured_resources, [])
+     |> assign(:featured_resources, featured_resources)
      |> assign(:show_form, false)
-       |> assign(:editing_resource, false)
-     |> assign(show_form: false)}
+     |> assign(:editing_resource, false)
+     |> assign(show_form: false)
+     |> allow_upload(:file_url, accept: ~w(.pdf .png .jpeg .mp3 .mp4), max_entries: 1)
+    }
   end
 
   @impl true
   def handle_params(params, _uri, socket) do
     {:noreply,
      socket
-     |> assign(:params, params)
-    }
+     |> assign(:params, params)}
   end
 
   @impl true
@@ -52,9 +58,18 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
 
     resources = Resources.list_resources(socket.assigns.current_scope)
 
+    featured_resources =
+      resources
+      |> Enum.filter(fn
+        r -> r.is_featured == true end)
+
     {:noreply,
      socket
-     |> assign(resources: resources, filtered_resources: resources)
+     |> assign(
+       resources: resources,
+       filtered_resources: resources,
+       featured_resources: featured_resources
+     )
      |> put_flash(:info, "Resource deleted successfully")}
   end
 
@@ -70,10 +85,11 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
 
   @impl true
   def handle_event("validate", %{"resource" => params}, socket) do
-    changeset = Resources.change_resource(socket.assigns.resource, (params))
+    changeset = Resources.change_resource(socket.assigns.resource, params)
+
     {:noreply,
      socket
-     |> assign(changeset:  to_form(Map.put(changeset, :action, :validate)))
+     |> assign(changeset: to_form(Map.put(changeset, :action, :validate)))
     }
   end
 
@@ -83,12 +99,12 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
   end
 
   defp save_resource(socket, :edit, resource_params) do
-    case Resources.update_resource(socket.assigns.resource, (resource_params)) do
+    case Resources.update_resource(socket.assigns.resource, resource_params) do
       {:ok, _resource} ->
         {:noreply,
          socket
          |> put_flash(:info, "Resource updated successfully")
-         |> push_patch(to: ~p"/resources")}
+         |> push_navigate(to: ~p"/resources")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, :form, to_form(changeset))}
@@ -96,20 +112,29 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
   end
 
   defp save_resource(socket, _, resource_params) do
-    case Resources.create_resource((resource_params)) do
+    url =
+      case Resources.upload_file(socket, "/resources") do
+        {:error, _e} -> "https://example.com/404"
+        url when is_list(url) -> List.first(url)
+        _ -> "https://example.com/404"
+      end
+        |>IO.inspect(label: "index===")
+      resource_params =
+        resource_params
+      |> Map.put("url", url)
+
+    case Resources.create_resource(resource_params) do
       {:ok, _resource} ->
         {:noreply,
          socket
          |> put_flash(:info, "Resource created successfully")
-         |> push_patch(to: ~p"/resources")}
+         |> push_navigate(to: ~p"/resources")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
-        IO.inspect(changeset)
         {:noreply,
-        socket
+         socket
          |> put_flash(:error, "Resource could not be created")
-        |> assign(form: to_form(changeset))
-      }
+         |> assign(form: to_form(changeset))}
     end
   end
 end

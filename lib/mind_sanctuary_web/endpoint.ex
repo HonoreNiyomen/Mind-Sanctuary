@@ -27,7 +27,7 @@ defmodule MindSanctuaryWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :mind_sanctuary,
-    gzip: not code_reloading?,
+    gzip: false,
     only: MindSanctuaryWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the

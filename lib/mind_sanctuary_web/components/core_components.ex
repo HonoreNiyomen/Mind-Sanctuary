@@ -333,6 +333,90 @@ defmodule MindSanctuaryWeb.CoreComponents do
     """
   end
 
+
+  @doc """
+  Renders a file upload UI component for attachments.
+
+  This component provides users with an interface to upload files by either clicking
+  a button or dragging and dropping files into the designated area. It displays the
+  progress of each file being uploaded, allows users to cancel uploads, and shows
+  error messages for issues such as file size, type, or upload failures.
+
+  Supported file types and size limits are indicated to the user. Error messages are
+  user-friendly and mapped from internal error atoms.
+
+  ## Assigns
+
+    * `@uploads.attachment` - The upload configuration and state for attachments,
+      typically provided by Phoenix LiveView's file upload functionality.
+
+  ## Features
+
+    * Drag-and-drop or button-based file selection
+    * Progress bar for each uploading file
+    * Cancel button for each upload
+    * User-friendly error messages for upload issues
+    * File type and size guidance for users
+  """
+  def error_to_string(:too_large), do: "File too large"
+  def error_to_string(:too_many_files), do: "Too many files"
+  def error_to_string(:not_accepted), do: "Unacceptable file type"
+  def error_to_string(:external_client_failure), do: "External client failure"
+  def error_to_string(_), do: "Unknown error"
+
+  def upload_attachment(assigns) do
+    ~H"""
+    <div class="fieldset mb-2">
+      <label>
+    <div class="mb-4">
+      <span :if={@label} class="label mb-1">{@label}</span>
+      <section phx-drop-target={@uploads.file_url.ref}>
+        <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none px-4 py-2 border border-indigo-600 hover:bg-indigo-50 transition-colors duration-150">
+          <div class="space-y-1 text-center w-full">
+            <div class="flex flex-col items-center text-sm text-gray-600 justify-center">
+              <label for={@id} class="">
+                <.live_file_input
+                  upload={@uploads.file_url}
+                  id={@id}
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </label>
+              <p class="pt-2">select a file or drag and drop</p>
+            </div>
+            <p class="text-xs text-gray-500">PDF, PNG, JPEG, MP3, MP4 up to 10MB</p>
+          </div>
+        </div>
+
+        <article :for={entry <- @uploads.file_url.entries} class="upload-entry mt-2">
+          <figure>
+            <figcaption class="text-sm">{entry.client_name}</figcaption>
+          </figure>
+          <progress value={entry.progress} max="100" class="w-full h-2 mt-1">
+            {entry.progress}%
+          </progress>
+          <button
+            type="button"
+            phx-click="cancel-upload"
+            phx-value-ref={entry.ref}
+            aria-label="cancel"
+            class="text-red-600 ml-2"
+          >
+            &times;
+          </button>
+          <p :for={err <- upload_errors(@uploads.file_url, entry)} class="text-xs text-red-600">
+            {error_to_string(err)}
+          </p>
+        </article>
+        <p :for={err <- upload_errors(@uploads.file_url)} class="text-xs text-red-600 mt-1">
+          {error_to_string(err)}
+        </p>
+      </section>
+    </div>
+      </label>
+    </div>
+    """
+  end
+
   @doc """
   Renders a header with title.
   """

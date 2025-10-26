@@ -25,8 +25,7 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
      |> assign(:show_form, false)
      |> assign(:editing_resource, false)
      |> assign(show_form: false)
-     |> allow_upload(:file_url, accept: ~w(.pdf .png .jpeg .mp3 .mp4), max_entries: 1)
-    }
+     |> allow_upload(:file_url, accept: ~w(.pdf .png .jpeg .mp3 .mp4), max_entries: 1)}
   end
 
   @impl true
@@ -61,7 +60,8 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
     featured_resources =
       resources
       |> Enum.filter(fn
-        r -> r.is_featured == true end)
+        r -> r.is_featured == true
+      end)
 
     {:noreply,
      socket
@@ -89,8 +89,7 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
 
     {:noreply,
      socket
-     |> assign(changeset: to_form(Map.put(changeset, :action, :validate)))
-    }
+     |> assign(changeset: to_form(Map.put(changeset, :action, :validate)))}
   end
 
   @impl true
@@ -118,9 +117,9 @@ defmodule MindSanctuaryWeb.ResourcesLive.Index do
         url when is_list(url) -> List.first(url)
         _ -> "https://example.com/404"
       end
-        |>IO.inspect(label: "index===")
-      resource_params =
-        resource_params
+
+    resource_params =
+      resource_params
       |> Map.put("url", url)
 
     case Resources.create_resource(resource_params) do

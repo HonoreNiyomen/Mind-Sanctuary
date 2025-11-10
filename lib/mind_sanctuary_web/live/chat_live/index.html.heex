@@ -51,16 +51,18 @@
             <% else %>
               <div class="space-y-4">
                 <%= for message <- @messages do %>
-                  <%= if message["user_id"] == @current_scope.user.id do %>
+                  <%= if message["user"]["id"] == @current_scope.user.id do %>
                     <!-- Current User's Message (Right Side) -->
                     <div class="flex justify-end">
-                      <div class="flex flex-col items-end max-w-[50%]">
-                        <div class="bg-indigo-600 text-white rounded-lg px-4 py-2 shadow-sm">
+                      <div class="flex flex-col items-end rounded-lg bg-indigo-100 shadow-sm max-w-[50%]">
+                          <span class="text-xs font-medium px-3 py-2 text-gray-900">
+                            {message["user"]["username"]}
+                          </span>
+                        <div class="bg-indigo-600 text-white border-t border-gray-200 min-w-full px-4 py-2">
                           <p class="text-sm break-words">{message["body"]}</p>
                         </div>
-                        <div class="flex items-center mt-1 space-x-2">
-                          <span class="text-xs text-gray-500">{message["username"]}</span>
-                          <span class="text-xs text-gray-400">
+                        <div class="flex items-center mt-1 space-x-2 px-2 py-1">
+                          <span class="text-xs text-gray-500">
                             <%= if message["inserted_at"] do %>
                               {format_datetime(message["inserted_at"])}
                             <% else %>
@@ -73,14 +75,14 @@
                   <% else %>
                     <!-- Other User's Message (Left Side) -->
                     <div class="flex justify-start">
-                      <div class="flex flex-col items-start max-w-[50%]">
-                        <div class="bg-white border border-gray-200 rounded-lg px-4 py-2 shadow-sm">
+                      <div class="flex flex-col items-start rounded-lg shadow-sm max-w-[50%]">
+                          <span class="text-xs font-medium px-3 py-2 text-gray-700">
+                            {message["user"]["username"]}
+                          </span>
+                        <div class="bg-white border-t border-gray-200 px-4 py-2 min-w-full">
                           <p class="text-sm text-gray-900 break-words">{message["body"]}</p>
                         </div>
-                        <div class="flex items-center mt-1 space-x-2">
-                          <span class="text-xs font-medium text-gray-700">
-                            {message["username"]}
-                          </span>
+                        <div class="flex items-center mt-1 space-x-2 px-2 py-1">
                           <span class="text-xs text-gray-400">
                             <%= if message["inserted_at"] do %>
                               {format_datetime(message["inserted_at"])}

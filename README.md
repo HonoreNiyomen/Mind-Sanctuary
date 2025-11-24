@@ -1,4 +1,4 @@
-# MindSanctuary - System overview (technical summary)
+# MindSanctuary - System overview
 
 MindSanctuary is a non-clinical, university-centered wellbeing SaaS built with Phoenix LiveView for reactive UI and Phoenix Channels for anonymous peer chat. Core subsystems:
 
@@ -12,13 +12,11 @@ MindSanctuary is a non-clinical, university-centered wellbeing SaaS built with P
 
 * Events / Workshops (listing, RSVP, calendar export).
 
-* Admin & Volunteer dashboard (manage resources, see queue, moderate).
+* Admin dashboard (manage resources, see queue, moderate).
 
 * Background workers (deliver digests, schedule pairing, generate analytics).
 
-## Priority (MVP-first)
-
-MVP features (build first):
+## MVP features
 
 1. Auth (university email sign-up + role selection).
 
@@ -28,10 +26,8 @@ MVP features (build first):
 
 4. Anonymous peer chat pairing + chat UI (one-to-one).
 
-5. Volunteer Dashboard: see active queue & accept chats.
-
-6. Basic moderation/reporting flow and profanity filtering.
-Stretch (add later):
+5. Basic moderation/reporting flow and profanity filtering.
+Stretch (coming soon):
 
   * Calendar integration / notifications.
 
@@ -44,50 +40,29 @@ Stretch (add later):
   * SSO with university (SAML/OAuth).
 
 
-# Endpoints & LiveViews (minimal list)
+# Endpoints & LiveViews (minimal)
 
 * `/` — landing LiveView
 * `/auth/*` — registration/login via generated auth
 * `/mood` — Mood tracker LiveView + POST endpoint
 * `/resources` — Resource hub LiveView
 * `/resources/new`, `/resources/:id/edit` — Admin LiveViews
-* `/chat` — Request chat / join queue component (LiveView or form)
+* `/chat` — Request chat / Public Chat component (LiveView or form)
 * `/volunteer/dashboard` — volunteer LiveView (queue + active)
 * `/chat/:id` — chat LiveView that connects to Channel topic
-* `/events` — Event listing LiveView
+* `/calendar` — Event listing LiveView
+* `/dashboard` — General dashboard (landing page)
 * `/admin` — Admin dashboard (flags, usage metrics)
 
-# Suggested task list (prioritized)
+# How to Run System
 
-1. Initialize Phoenix project + Ecto + Postgres + phx.gen.auth.
-2. Create `User` schema + roles and volunteer availability.
-3. Build MoodEntry schema + LiveView check-in.
-4. Resources CRUD (admin-only) + listing UI.
-5. Chat tables + basic queue creation.
-6. Phoenix Channel for `chat:<id>` and basic message send/receive.
-7. Volunteer dashboard + Presence.
-8. Pairing worker (Oban job) or GenServer to match queued chats to volunteers.
-9. Moderation/report endpoint + admin view for flags.
-10. S3 integration for resource audio.
-11. Deploy to staging and run simple demo.
+1. **Clone the repo:**
+   ```bash
+   git clone https://github.com/HonoreNiyomen/Mind-Sancuary.git
+   cd Mind-Sancuary
 
-# Quick checklist (shareable)
-
-* [ ] Phoenix app scaffolded
-* [ ] PostgreSQL + Ecto configured
-* [ ] Authentication implemented
-* [ ] Mood tracker UI and DB
-* [ ] Resource hub CRUD + audio streaming
-* [ ] Anonymous chat models + channels
-* [ ] Volunteer dashboard + Presence
-* [ ] Pairing worker (Oban)
-* [ ] Moderation/reporting UI
-* [ ] Deployable release + CI
-* [ ] Basic tests for critical flows
-
-# Final pragmatic advice (philosophy + craft)
-
-* Keep the MVP *tiny* but end-to-end: one complete story (auth → mood → chat) is far better than many half-finished features. Examiners like working demos.
-* Treat anonymity as a first-class requirement — if you compromise that, the whole project loses credibility.
-* Write tests for the matching logic — that’s the part most likely to have race conditions.
-* Use LiveView for most UI to minimize JS surface area; add JS only if absolutely necessary for UX.
+2. **To start your Phoenix server**
+    * On an environment with **erlang v28.0+**, **elixir v1.18+** and **postgresql v16+** setup:
+   ```bash
+   mix setup ## to install and setup dependencies
+   mix phx.server ## which will run the app on port 4000
